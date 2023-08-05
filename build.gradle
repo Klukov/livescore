@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'groovy'
+    id 'pmd'
+    id 'com.diffplug.spotless' version '6.20.0'
+}
+
+group = 'org.klukov.example'
+version = '1.0-SNAPSHOT'
+sourceCompatibility = '17'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.28'
+    annotationProcessor 'org.projectlombok:lombok:1.18.28'
+    implementation 'org.slf4j:slf4j-simple:1.7.36'
+
+    testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+    testImplementation 'org.codehaus.groovy:groovy:3.0.18'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+spotless {
+    java {
+        importOrder()
+        removeUnusedImports()
+        cleanthat()
+        googleJavaFormat().aosp()
+        formatAnnotations()
+    }
+    groovy {
+        importOrder()
+        indentWithSpaces()
+        endWithNewline()
+        trimTrailingWhitespace()
+        excludeJava()
+    }
+    sql {
+        target 'src/main/resources/**/*.sql'
+        dbeaver()
+    }
+}
+
+pmd {
+    ignoreFailures = false
+}
