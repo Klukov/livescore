@@ -1,8 +1,8 @@
 package org.klukov.example.livescore.dto;
 
-public record Score(Integer value) {
+public record Score(int value) implements Comparable<Score> {
 
-    public static Score of(Integer value) {
+    public static Score of(int value) {
         return new Score(value);
     }
 
@@ -20,5 +20,10 @@ public record Score(Integer value) {
 
     public Score add(Score score) {
         return Score.of(this.value() + score.value());
+    }
+
+    @Override
+    public int compareTo(Score o) {
+        return Integer.compare(this.value, o.value);
     }
 }
