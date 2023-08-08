@@ -6,7 +6,7 @@ class TeamTest extends Specification {
 
     def "should create team with name"() {
         when:
-        def team = Team.of(teamName)
+        Team.of(teamName)
 
         then:
         noExceptionThrown()
@@ -20,7 +20,7 @@ class TeamTest extends Specification {
 
     def "should throw exception when invalid teamName is inserted"() {
         when:
-        def team = Team.of(teamName)
+        Team.of(teamName)
 
         then:
         thrown(IllegalArgumentException.class)

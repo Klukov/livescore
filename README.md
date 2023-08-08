@@ -13,4 +13,3 @@
 1. The data is split into matchMap and liveScoreBoard. LiveScoreBoard is ordered data for the get method's fast access.
 2. To avoid data inconsistency in the case when match update and match create came at the same time from two threads simple write lock on all modify methods is implemented.
 3. The matchMap is concurrent Collection not because of concurrent access to the class - it solved by write lock, but to avoid jvm memory consistency errors.
-
