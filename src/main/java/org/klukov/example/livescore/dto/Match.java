@@ -34,6 +34,26 @@ public class Match implements Comparable<Match> {
                 : -Long.compare(this.startTimeInEpochMillis, o.startTimeInEpochMillis);
     }
 
+    public Match withUpdatedStartTime(long startTimeInEpochMillis) {
+        return Match.builder()
+                .homeTeam(this.homeTeam)
+                .awayTeam(this.awayTeam)
+                .homeTeamScore(this.homeTeamScore)
+                .awayTeamScore(this.awayTeamScore)
+                .startTimeInEpochMillis(startTimeInEpochMillis)
+                .build();
+    }
+
+    public Match withUpdatedScore(Score homeTeamScore, Score awayTeamScore) {
+        return Match.builder()
+                .homeTeam(this.homeTeam)
+                .awayTeam(this.awayTeam)
+                .homeTeamScore(homeTeamScore)
+                .awayTeamScore(awayTeamScore)
+                .startTimeInEpochMillis(this.startTimeInEpochMillis)
+                .build();
+    }
+
     public static MatchBuilder builder() {
         return new MatchBuilder();
     }

@@ -3,6 +3,7 @@ package org.klukov.example.livescore;
 import java.time.Clock;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.klukov.example.livescore.dto.FinishMatchRequest;
 import org.klukov.example.livescore.dto.Match;
@@ -24,36 +25,25 @@ public final class LiveScoreService {
         this.liveScores = Collections.emptyList();
     }
 
-    public void startNewMatch(NewMatchRequest newMatchRequest) {
+    public void startNewMatch(NewMatchRequest request) {
         synchronized (writeLock) {
-            var newMatch = newMatchRequest.toMatch();
-            var newMatchIdentifier = MatchIdentifier.of(newMatch);
-            matchesMap.putIfAbsent(newMatchIdentifier, newMatch);
-            matchesMap.computeIfPresent(
-                    newMatchIdentifier, (key, value) -> generateNewMatch(key, newMatch, value));
+            var identifier = MatchIdentifier.of(request.homeTeam(), request.awayTeam());
+            matchesMap.compute(identifier, (key, value) -> computeStartNewMatch(value, request));
             this.recalculateLiveScores();
         }
     }
 
-    public void updateMatch(UpdateMatchRequest updateMatchRequest) {
+    public void updateMatch(UpdateMatchRequest request) {
         synchronized (writeLock) {
-            var updatedMatchIdentifier =
-                    MatchIdentifier.of(
-                            updateMatchRequest.homeTeam(), updateMatchRequest.awayTeam());
-            matchesMap.putIfAbsent(
-                    updatedMatchIdentifier, generateMatchWithTimeFromClock(updateMatchRequest));
-            matchesMap.computeIfPresent(
-                    updatedMatchIdentifier,
-                    (key, value) -> generateNewMatch(key, value, updateMatchRequest.toMatch()));
+            var identifier = MatchIdentifier.of(request.homeTeam(), request.awayTeam());
+            matchesMap.compute(identifier, (key, value) -> computeUpdateMatch(value, request));
             this.recalculateLiveScores();
         }
     }
 
-    public void finishMatch(FinishMatchRequest finishMatchRequest) {
+    public void finishMatch(FinishMatchRequest request) {
         synchronized (writeLock) {
-            var finishedMatch = finishMatchRequest.toMatch();
-            var finishedMatchIdentifier = MatchIdentifier.of(finishedMatch);
-            matchesMap.remove(finishedMatchIdentifier);
+            matchesMap.remove(MatchIdentifier.of(request.homeTeam(), request.awayTeam()));
             this.recalculateLiveScores();
         }
     }
@@ -62,18 +52,20 @@ public final class LiveScoreService {
         return ScoreBoard.builder().matchList(liveScores.stream().toList()).build();
     }
 
-    private void recalculateLiveScores() {
-        this.liveScores = matchesMap.values().stream().sorted().toList();
+    private Match computeStartNewMatch(Match value, NewMatchRequest request) {
+        return Optional.ofNullable(value)
+                .map(v -> updateTime(v, request))
+                .orElseGet(request::toMatch);
     }
 
-    private static Match generateNewMatch(MatchIdentifier key, Match timeData, Match scoreData) {
-        return Match.builder()
-                .homeTeam(key.homeTeam())
-                .awayTeam(key.awayTeam())
-                .homeTeamScore(scoreData.getHomeTeamScore())
-                .awayTeamScore(scoreData.getAwayTeamScore())
-                .startTimeInEpochMillis(timeData.getStartTimeInEpochMillis())
-                .build();
+    private Match computeUpdateMatch(Match value, UpdateMatchRequest request) {
+        return Optional.ofNullable(value)
+                .map(v -> updateScore(v, request))
+                .orElseGet(() -> generateMatchWithTimeFromClock(request));
+    }
+
+    private void recalculateLiveScores() {
+        this.liveScores = matchesMap.values().stream().sorted().toList();
     }
 
     private Match generateMatchWithTimeFromClock(UpdateMatchRequest updateMatchRequest) {
@@ -84,5 +76,13 @@ public final class LiveScoreService {
                 .awayTeamScore(updateMatchRequest.awayTeamScore())
                 .startTimeInEpochMillis(clock.millis())
                 .build();
+    }
+
+    private static Match updateTime(Match match, NewMatchRequest request) {
+        return match.withUpdatedStartTime(request.startTimeInEpochMillis());
+    }
+
+    private static Match updateScore(Match match, UpdateMatchRequest request) {
+        return match.withUpdatedScore(request.homeTeamScore(), request.awayTeamScore());
     }
 }
