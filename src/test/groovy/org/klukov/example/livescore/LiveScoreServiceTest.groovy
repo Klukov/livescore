@@ -70,6 +70,22 @@ class LiveScoreServiceTest extends Specification {
         assertMatch(result.matchList()[2], "A", "B", 0, 0, 1)
     }
 
+    def "should update do not happen when update message came with older data - lower score equals older data"() {
+        given:
+        generateStartDashBoard()
+
+        when:
+        updateMatch("C", "D", 2, 1)
+        updateMatch("C", "D", 1, 1)
+        def result = liveScoreService.getScoreBoard()
+
+        then:
+        result.matchList().size() == 3
+        assertMatch(result.matchList()[0], "C", "D", 2, 1, 10)
+        assertMatch(result.matchList()[1], "E", "F", 0, 0, 100)
+        assertMatch(result.matchList()[2], "A", "B", 0, 0, 1)
+    }
+
     def "should update many matches and result should be visible on dashboard and result should be ordered"() {
         given:
         generateUpdatedDashBoard()

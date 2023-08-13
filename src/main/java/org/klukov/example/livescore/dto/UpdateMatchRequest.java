@@ -4,4 +4,9 @@ import lombok.Builder;
 
 @Builder
 public record UpdateMatchRequest(
-        Team homeTeam, Team awayTeam, Score homeTeamScore, Score awayTeamScore) {}
+        Team homeTeam, Team awayTeam, Score homeTeamScore, Score awayTeamScore) {
+
+    public Score getTotalScore() {
+        return homeTeamScore.add(awayTeamScore);
+    }
+}

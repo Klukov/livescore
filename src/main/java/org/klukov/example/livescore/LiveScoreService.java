@@ -59,9 +59,13 @@ public final class LiveScoreService {
     }
 
     private Match computeUpdateMatch(Match value, UpdateMatchRequest request) {
-        return Optional.ofNullable(value)
-                .map(v -> updateScore(v, request))
-                .orElseGet(() -> generateMatchWithTimeFromClock(request));
+        if (value == null) {
+            return generateMatchWithTimeFromClock(request);
+        }
+        if (value.getTotalScore().isLessOrEqualThan(request.getTotalScore())) {
+            return updateScore(value, request);
+        }
+        return value;
     }
 
     private void recalculateLiveScores() {

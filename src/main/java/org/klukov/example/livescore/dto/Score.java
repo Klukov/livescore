@@ -18,6 +18,14 @@ public record Score(int value) implements Comparable<Score> {
         return startScore;
     }
 
+    public boolean isLessOrEqualThan(Score other) {
+        return !this.isHigherThan(other);
+    }
+
+    public boolean isHigherThan(Score other) {
+        return this.value > other.value;
+    }
+
     public Score add(Score score) {
         return Score.of(this.value() + score.value());
     }
