@@ -59,13 +59,9 @@ public final class LiveScoreService {
     }
 
     private Match computeUpdateMatch(Match value, UpdateMatchRequest request) {
-        if (value == null) {
-            return generateMatchWithTimeFromClock(request);
-        }
-        if (value.getTotalScore().isLessOrEqualThan(request.getTotalScore())) {
-            return updateScore(value, request);
-        }
-        return value;
+        return Optional.ofNullable(value)
+                .map(v -> updateScore(v, request))
+                .orElseGet(() -> generateMatchWithTimeFromClock(request));
     }
 
     private void recalculateLiveScores() {
@@ -87,6 +83,9 @@ public final class LiveScoreService {
     }
 
     private static Match updateScore(Match match, UpdateMatchRequest request) {
+        if (match.getTotalScore().isHigherThan(request.getTotalScore())) {
+            return match;
+        }
         return match.withUpdatedScore(request.homeTeamScore(), request.awayTeamScore());
     }
 }
