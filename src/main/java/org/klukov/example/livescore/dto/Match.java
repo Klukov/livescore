@@ -18,6 +18,12 @@ public class Match implements Comparable<Match> {
             Score homeTeamScore,
             Score awayTeamScore,
             long startTimeInEpochMillis) {
+        if (homeTeam == null
+                || awayTeam == null
+                || homeTeamScore == null
+                || awayTeamScore == null) {
+            throw new IllegalArgumentException("Teams and scores values cannot be null");
+        }
         this.homeTeam = homeTeam;
         this.awayTeam = awayTeam;
         this.homeTeamScore = homeTeamScore;

@@ -5,6 +5,12 @@ import lombok.Builder;
 @Builder
 public record NewMatchRequest(Team homeTeam, Team awayTeam, long startTimeInEpochMillis) {
 
+    public NewMatchRequest {
+        if (homeTeam == null || awayTeam == null) {
+            throw new IllegalArgumentException("Any team cannot be null");
+        }
+    }
+
     public static NewMatchRequest of(Team homeTeam, Team awayTeam, long startTimeInEpochMillis) {
         return NewMatchRequest.builder()
                 .homeTeam(homeTeam)
