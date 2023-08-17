@@ -16,7 +16,7 @@ public final class LiveScoreService {
     private final Clock clock;
     private final ConcurrentHashMap<MatchIdentifier, Match> matchesMap;
     private final Object writeLock;
-    private transient List<Match> liveScores;
+    private volatile List<Match> liveScores;
 
     public LiveScoreService(Clock clock) {
         this.clock = clock;
